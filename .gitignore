@@ -1,0 +1,8 @@
+# macOS
+.DS_Store
+# Node
+node_modules/
+# Newman reports
+newman/*.htm
+newman/*.html
+# Postman: don't export secrets in Initial Values
