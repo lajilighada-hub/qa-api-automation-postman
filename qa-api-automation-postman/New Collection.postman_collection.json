@@ -1,0 +1,240 @@
+{
+	"info": {
+		"_postman_id": "4eca5fb4-8e9b-45b6-869d-fee7b9a92113",
+		"name": "New Collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17488203"
+	},
+	"item": [
+		{
+			"name": "Get Users",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const json = pm.response.json();\r",
+							"\r",
+							"pm.test(\"200 OK\", () => pm.response.to.have.status(200));\r",
+							"\r",
+							"pm.test(\"At least one user\", () => pm.expect(json.length).to.be.above(0));\r",
+							"\r",
+							"pm.environment.set(\"userId\", json[0].id);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
+				"disabledSystemHeaders": {
+					"accept-encoding": true,
+					"connection": true
+				}
+			},
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"title\":\"test\",\"body\":\"QA test\",\"userId\":1}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/users",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get issue types for project",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const json = pm.response.json();\r",
+							"\r",
+							"pm.test(\"200 OK\", () => pm.response.to.have.status(200));\r",
+							"\r",
+							"pm.test(\"Todos for user not empty\", () => pm.expect(json.length).to.be.above(0));\r",
+							"\r",
+							"pm.environment.set(\"todoTitle\", json[0].title);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/todos?userId={{userId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"todos"
+					],
+					"query": [
+						{
+							"key": "userId",
+							"value": "{{userId}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get assignable users",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const json = pm.response.json();\r",
+							"\r",
+							"pm.test(\"200 OK\", () => pm.response.to.have.status(200));\r",
+							"\r",
+							"pm.test(\"Assignable users exist (simulated)\", () => pm.expect(json.length).to.be.above(0));\r",
+							"\r",
+							"pm.environment.set(\"assigneeUserId\", json[0].id);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/users",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create issue",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const json = pm.response.json();\r",
+							"\r",
+							"pm.test(\"201 Created\", () => pm.response.to.have.status(201));\r",
+							"\r",
+							"pm.test(\"Has id\", () => pm.expect(json.id).to.exist);\r",
+							"\r",
+							"pm.environment.set(\"postId\", json.id);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"title\": \"API-created issue\",\r\n  \"body\": \"Type: {{todoTitle}} | Assignee: {{assigneeUserId}}\",\r\n  \"userId\": {{userId}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/posts",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"posts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get created issue",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const json = pm.response.json();\r",
+							"\r",
+							"// JSONPlaceholder may not persist new posts; accept 200 or 404\r",
+							"pm.test(\"200 or 404 (mock backend)\", () => {\r",
+							"  pm.expect([200,404]).to.include(pm.response.code);\r",
+							"});\r",
+							"\r",
+							"if (pm.response.code === 200) {\r",
+							"  const saved = Number(pm.environment.get(\"postId\"));\r",
+							"  pm.test(\"Correct id\", () => pm.expect(json.id).to.eql(saved));\r",
+							"}\r",
+							"\r",
+							"pm.test(\"Content-Type JSON\", () => {\r",
+							"  pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Under 1s\", () => pm.expect(pm.response.responseTime).to.be.below(1000));\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/posts/{{postId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"posts",
+						"{{postId}}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
